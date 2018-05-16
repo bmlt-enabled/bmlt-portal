@@ -35,10 +35,17 @@ static $bmlt_instructional_video = 'https://www.dropbox.com/s/of7xevt0o62rgb1/me
 
 # Timezones for config
 Eastern ........... America/New_York
+
 Central ........... America/Chicago
+
 Mountain .......... America/Denver
+
 Mountain no DST ... America/Phoenix
+
 Pacific ........... America/Los_Angeles
+
 Alaska ............ America/Anchorage
+
 Hawaii ............ America/Adak
+
 Hawaii no DST ..... Pacific/Honolulu
