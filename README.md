@@ -31,3 +31,14 @@ These are optional and will be added as links to main menu if they exist in the 
 static $bmlt_instructional_manual = 'http://www.crna.org/changes/HowtoUpdateAreaMeetingListings.pdf';
 
 static $bmlt_instructional_video = 'https://www.dropbox.com/s/of7xevt0o62rgb1/meetings.mp4?dl=0';
+
+
+# Timezones for config
+Eastern ........... America/New_York
+Central ........... America/Chicago
+Mountain .......... America/Denver
+Mountain no DST ... America/Phoenix
+Pacific ........... America/Los_Angeles
+Alaska ............ America/Anchorage
+Hawaii ............ America/Adak
+Hawaii no DST ..... Pacific/Honolulu
