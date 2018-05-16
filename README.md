@@ -14,9 +14,13 @@ The following options should be configured in the config.php file.
 Example settings
 
 static $bmlt_server = 'http://crna.org/main_server';
+
 static $timezone = 'America/New_York';
+
 $service_body_name = 'Carolina Region';
+
 static $service_body_shortname = 'CRNA';
+
 static $service_body_website = 'http://crna.org';
 
 
