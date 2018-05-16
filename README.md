@@ -5,8 +5,8 @@ Additional entry point into the bmlt that offers easy access to meeting changes 
 download the repository and edit the config.php then put in a folder on your server.
 
 # examples
-*[Carolina Region](https://crna.org/changes) - example shows with manual link option
-*[New England Region](https://nerna.org/changes) - example shows with manual and video link option
+ * [Carolina Region](https://crna.org/changes) - example shows with manual link option]
+ * [New England Region](https://nerna.org/changes) - example shows with manual and video link option
 
 # configure
 The following options should be configured in the config.php file.
