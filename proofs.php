@@ -3,8 +3,8 @@ include 'config.php';
 
 date_default_timezone_set("$timezone");
 
-$area_asc = $_REQUEST['asc'];
-$area_num = $_REQUEST['areanum'];
+$area_asc = $_GET['asc'];
+$area_num = $_GET['areanum'];
 
 $today=date("Y-m-d");
 

@@ -26,7 +26,15 @@ static $service_body_website = 'http://crna.org';
 
 
 
-These are optional and will be added as links to main menu if they exist in the config.
+The following configuration values are optional
+
+its now possible to specify a service body parent, this is usefull for service that have multiple regions in them.
+
+static $parent_service_body_id = '';
+
+
+
+These will be added as links to main menu if they exist in the config.
 
 static $bmlt_instructional_manual = 'http://www.crna.org/changes/HowtoUpdateAreaMeetingListings.pdf';
 

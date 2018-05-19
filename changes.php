@@ -1,12 +1,9 @@
 <?php
 include 'config.php';
-//if (preg_match('/changes.php/', $_SERVER['PHP_SELF'])) {
-//    die ("<h4>You don't have right permission to access this file directly.</h4>");
-//}
 
 date_default_timezone_set("$timezone");
-$area_asc = $_REQUEST['asc'];
-$area_num = $_REQUEST['areanum'];
+$area_asc = $_GET['asc'];
+$area_num = $_GET['areanum'];
 $how_many_days = $_REQUEST['hdays'];
 
 $today=date("Y-m-d");
@@ -109,8 +106,5 @@ echo "</p> <hr>";
 // loop ends
 
 echo "END of File<br>BMLT Changes</body></html>"
-
-
-
 
 ?>

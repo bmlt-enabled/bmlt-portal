@@ -82,18 +82,43 @@ date_default_timezone_set("$timezone");
            $gsb_array = json_decode($get_service_bodies, true);
            sortBySubkey($gsb_array, 'name');
            $changes = "";
-           // loop begins
-           foreach($gsb_array as $row_changes) {   
-             $changes .= "<tr>";
-             $changes .= "<td>" .$row_changes['name']. "</td>";
-             $changes .= "<td>";
-            	$changes .= "<a href=\"changes.php?asc=" .$row_changes['name']. "&areanum=" .$row_changes['id']. "&hdays=30\" class=\"button special\" target=\"_blank\">30 Days</a>";
-             $changes .= " | ";
-             $changes .= "<a href=\"changes.php?asc=" .$row_changes['name']. "&areanum=" .$row_changes['id']. "&hdays=90\" class=\"button special\" target=\"_blank\">90 Days</a>";
-             $changes .= "</td>";
-             $changes .= "</tr>";
+           $changes_psb = "";
+           if (isset($parent_service_body_id)) {
+ 
+             $filter_parent_service_body = array_filter( $gsb_array, function ($var) use ($parent_service_body_id) {
+               return ($var['parent_id'] == $parent_service_body_id);
+             });
+ 
+             // loop begins
+             foreach($filter_parent_service_body as $row_changes_psb) {   
+               $changes_psb .= "<tr>";
+               $changes_psb .= "<td>" .$row_changes_psb['name']. "</td>";
+               $changes_psb .= "<td>";
+              	$changes_psb .= "<a href=\"changes.php?asc=" .$row_changes_psb['name']. "&areanum=" .$row_changes_psb['id']. "&hdays=30\" class=\"button special\" target=\"_blank\">30 Days</a>";
+               $changes_psb .= " | ";
+               $changes_psb .= "<a href=\"changes.php?asc=" .$row_changes_psb['name']. "&areanum=" .$row_changes_psb['id']. "&hdays=90\" class=\"button special\" target=\"_blank\">90 Days</a>";
+               $changes_psb .= "</td>";
+               $changes_psb .= "</tr>";
+             }
+             // loop ends
+            echo $changes_psb;
            }
-           // loop ends
+           
+
+           else {
+             // loop begins
+             foreach($gsb_array as $row_changes) {   
+               $changes .= "<tr>";
+               $changes .= "<td>" .$row_changes['name']. "</td>";
+               $changes .= "<td>";
+              	$changes .= "<a href=\"changes.php?asc=" .$row_changes['name']. "&areanum=" .$row_changes['id']. "&hdays=30\" class=\"button special\" target=\"_blank\">30 Days</a>";
+               $changes .= " | ";
+               $changes .= "<a href=\"changes.php?asc=" .$row_changes['name']. "&areanum=" .$row_changes['id']. "&hdays=90\" class=\"button special\" target=\"_blank\">90 Days</a>";
+               $changes .= "</td>";
+               $changes .= "</tr>";
+             }
+             // loop ends
+           }
            echo $changes;
            ?>
 											</tbody>
@@ -118,10 +143,17 @@ date_default_timezone_set("$timezone");
 											</thead>
 											<tbody>
 											<?php
+            if (isset($parent_service_body_id)) {
+            $prf_array = $filter_parent_service_body;
+            }
+            else {
+             $prf_array = $gsb_array;
+            }
+             
            $proofs = "";  
 											// loop begins
-											foreach($gsb_array as $row_proofs) {
-											  if ( $row_proofs['parent_id'] == '0' || $row_proofs['parent_id'] == '' ) {
+											foreach($prf_array as $row_proofs) {
+											  if ( $row_proofs['type'] == 'RS' || $row_proofs['type'] == 'ZF' ) {
 													  // Do Nothing
  											 }
 											  else {
