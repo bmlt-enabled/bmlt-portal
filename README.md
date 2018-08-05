@@ -28,7 +28,7 @@ static $service_body_website = 'http://crna.org';
 
 # Optional configuration values
 
-its now possible to specify a service body parent, this is usefull for service that have multiple regions in them.
+its now possible to specify a service body parent, this is usefull for service bodies that have multiple regions in them.
 
 * static $parent_service_body_id = '';
 
