@@ -5,7 +5,7 @@ Additional entry point into the bmlt that offers easy access to meeting changes 
 download the repository and edit the config.php then put in a folder on your server.
 
 # examples
- * [Carolina Region](http://crna.org/changes) - example shows with manual link option]
+ * [Carolina Region](http://crna.org/changes) - example shows with manual link option
  * [New England Region](https://nerna.org/changes) - example shows with manual and video link option
 
 # configure
@@ -17,7 +17,7 @@ static $bmlt_server = 'http://crna.org/main_server';
 
 static $timezone = 'America/New_York';
 
-$service_body_name = 'Carolina Region';
+static $service_body_name = 'Carolina Region';
 
 static $service_body_shortname = 'CRNA';
 
@@ -26,19 +26,19 @@ static $service_body_website = 'http://crna.org';
 
 
 
-The following configuration values are optional
+# Optional configuration values
 
 its now possible to specify a service body parent, this is usefull for service that have multiple regions in them.
 
-static $parent_service_body_id = '';
+* static $parent_service_body_id = '';
 
 
 
 These will be added as links to main menu if they exist in the config.
 
-static $bmlt_instructional_manual = 'http://www.crna.org/changes/HowtoUpdateAreaMeetingListings.pdf';
+* static $bmlt_instructional_manual = 'http://www.crna.org/changes/HowtoUpdateAreaMeetingListings.pdf';
 
-static $bmlt_instructional_video = 'https://www.dropbox.com/s/of7xevt0o62rgb1/meetings.mp4?dl=0';
+* static $bmlt_instructional_video = 'https://www.dropbox.com/s/of7xevt0o62rgb1/meetings.mp4?dl=0';
 
 
 # Timezones for config
