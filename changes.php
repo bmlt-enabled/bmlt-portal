@@ -27,8 +27,11 @@ $url = $bmlt_server. "/client_interface/xml/?switcher=GetChanges&start_date=" .$
 $xml = simplexml_load_file($url);
 
 // loop begins
-foreach($xml->row as $row)
-{
+foreach($xml->row as $row) {
+if( strpos( $row->meeting_name, 'YAP' ) !== false ) {
+    // dont show YAP data
+}
+else {
 // begin new paragraph
 echo "<p>";
 // show Date
@@ -53,6 +56,8 @@ echo "<strong>User Name:</strong> ".$row->user_name."<br/>";
 echo "<strong>Service Body:</strong> ".$row->service_body_name."</br><OL>";
 // show details
 $details=$row->details;
+  // remove root_server_uri info
+ $details = str_replace(". root_server_uri was added as \"https:\" "," ",$details);
 		// Remove last . at end of details
 	$details = preg_replace('/.$/',"",$details);
 		// Remove the weird #@-@# from the format codes
@@ -102,6 +107,7 @@ $details=$row->details;
 echo "<strong>Details:</strong><LI> ".$details."</OL>";
 echo "</p> <hr>";
 // end paragraph
+}
 }
 // loop ends
 
