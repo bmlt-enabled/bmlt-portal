@@ -88,6 +88,12 @@ date_default_timezone_set("$timezone");
              $filter_parent_service_body = array_filter( $gsb_array, function ($var) use ($parent_service_body_id) {
                return ($var['parent_id'] == $parent_service_body_id);
              });
+               if (isset($include_parent_service_body_id)) {
+                   $key = array_search($parent_service_body_id, array_column($gsb_array, 'id'));
+                   $tmp_parent_sb[$key] = $gsb_array[$key];
+                   $filter_parent_service_body = array_merge($filter_parent_service_body, $tmp_parent_sb);
+                   sortBySubkey($filter_parent_service_body, 'name');
+               }
  
              // loop begins
              foreach($filter_parent_service_body as $row_changes_psb) {   
