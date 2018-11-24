@@ -32,6 +32,9 @@ its now possible to specify a service body parent, this is usefull for service b
 
 * static $parent_service_body_id = '';
 
+When using this feature if you also want to include the parent service body in the list you must add this to your config as well.
+
+* static $include_parent_service_body_id = true;
 
 
 These will be added as links to main menu if they exist in the config.
