@@ -4,13 +4,13 @@ static $bmlt_server = '';
 static $service_body_name = '';
 static $service_body_shortname = '';
 static $service_body_website = '';
-static $service_body_id = '1';  // the BMLT parent service body id number
+static $parent_service_body_id = '1';  // the BMLT parent service body id number
 static $howmanydays = '30';  // this should be set to the same number of days your cron job is set to
 
 
+// Notifier Config Options
+static $notify_service_body_id = ''; // this sets the service body id for the notifier and most likely should be set to parent service body
 
-//static $from_name = 'Service Body Admin';
-//static $from_email = 'service@someemail.org';
 
 static $smtp_to_name = '';
 static $smtp_to_address = '';

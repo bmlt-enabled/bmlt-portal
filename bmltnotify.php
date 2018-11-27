@@ -10,7 +10,7 @@ $dateminus=date('Y-m-d', strtotime("-$howmanydays days"));
 // show beginning header 
 $message = "<H2>" .$service_body_name. " CHANGES</H2>Changes for last $howmanydays day(s) from " .date("l jS \of F Y h:i A") . "<br><hr>";
 
-$url = $bmlt_server. "/client_interface/xml/?switcher=GetChanges&start_date=" .$dateminus. "&end_date=" .$today. "&service_body_id=" .$service_body_id;
+$url = $bmlt_server. "/client_interface/xml/?switcher=GetChanges&start_date=" .$dateminus. "&end_date=" .$today. "&service_body_id=" .$notify_service_body_id;
 
 // get xml file contents
 $xml = simplexml_load_file($url);
