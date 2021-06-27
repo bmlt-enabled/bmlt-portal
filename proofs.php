@@ -6,7 +6,7 @@ date_default_timezone_set("$timezone");
 $area_asc = $_GET['asc'];
 $area_num = $_GET['areanum'];
 $recurse = isset($_GET['recurse']) && $_GET['recurse'] == "true" ? "&recursive=1" : "";
-$show_unpublished = isset($_GET['unpublished']) && $_GET['unpublished'] == "true" ? true : false;
+$show_unpublished = isset($_GET['unpublished']) ? $_GET['unpublished'] : "false";
 $today=date("Y-m-d");
 
 $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
@@ -14,10 +14,14 @@ $current_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 // Remove parameter from query string
 $filtered_url =rtrim(preg_replace('~(\?|&)'.'unpublished'.'=[^&]*~', '$1', $current_url), "&");
 
-if ($show_unpublished) {
+if ($show_unpublished == "true") {
     $published_unpublished_query = "&advanced_published=-1";
     $published_unpublished_header = " (Unpublished Meetings Only)";
     $published_unpublished = "<a href=\"".$filtered_url."&unpublished=false\" class=\"no-print\">Show Published</a>";
+} elseif ($show_unpublished == "both") {
+    $published_unpublished_query = "&advanced_published=0";
+    $published_unpublished_header = "";
+    $published_unpublished = "<a href=\"".$filtered_url."&unpublished=true\" class=\"no-print\">Show Published</a>";
 } else {
     $published_unpublished_query = "&advanced_published=1";
     $published_unpublished_header = "";
