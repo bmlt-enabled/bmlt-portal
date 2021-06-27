@@ -6,11 +6,8 @@ date_default_timezone_set("$timezone");
 $area_asc = $_GET['asc'];
 $area_num = $_GET['areanum'];
 
-$recurse_sb = $_GET['recurse'] ? $_GET['recurse'] : "";
-$recurse = "";
-if ($recurse_sb === "true") {
-    $recurse = "&recursive=1";
-}
+$recurse = isset($_GET['recurse']) &&  $_GET['recurse'] === "true" ? "&recursive=1" : "";
+
 $today=date("Y-m-d");
 
 
