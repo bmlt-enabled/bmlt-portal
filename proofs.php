@@ -5,11 +5,24 @@ date_default_timezone_set("$timezone");
 
 $area_asc = $_GET['asc'];
 $area_num = $_GET['areanum'];
-
-$recurse = isset($_GET['recurse']) &&  $_GET['recurse'] === "true" ? "&recursive=1" : "";
-
+$recurse = isset($_GET['recurse']) && $_GET['recurse'] == "true" ? "&recursive=1" : "";
+$show_unpublished = isset($_GET['unpublished']) && $_GET['unpublished'] == "true" ? true : false;
 $today=date("Y-m-d");
 
+$protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
+$current_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+// Remove parameter from query string
+$filtered_url =rtrim(preg_replace('~(\?|&)'.'unpublished'.'=[^&]*~', '$1', $current_url), "&");
+
+if ($show_unpublished) {
+    $published_unpublished_query = "&advanced_published=-1";
+    $published_unpublished_header = " (Unpublished Meetings Only)";
+    $published_unpublished = "<a href=\"".$filtered_url."&unpublished=false\" class=\"no-print\">Show Published</a>";
+} else {
+    $published_unpublished_query = "&advanced_published=1";
+    $published_unpublished_header = "";
+    $published_unpublished = "<a href=\"".$filtered_url."&unpublished=true\" class=\"no-print\">Show Unpublished</a>";
+}
 
 echo "<!DOCTYPE html>
 <html>
@@ -38,22 +51,29 @@ body>div {
   box-sizing:border-box;
   background:red;
 }
+
+@media print
+{    
+    .no-print, .no-print *
+    {
+        display: none !important;
+    }
+}
 </style>
 </head>
 
-<body>
-<h2>Meeting List Proof Report for ".$area_asc."</h2>
+<body>".
+    $published_unpublished
+    ."<h2>Meeting List Proof Report for ".$area_asc.$published_unpublished_header."</h2>
 
 Printed on: " .date("l jS \of F Y h:i A") . "
 
 <h3>Pass this proof report around at your Area Service Committee meeting so that groups can check their listing and make changes.</h3>
 ";
 
-function sortBySubkey(&$array, $subkey, $sortType = SORT_ASC)
-{
-    if (empty($array)) {
-        return;
-    }
+
+function sortBySubkey(&$array, $subkey, $sortType = SORT_ASC) {
+    if ( empty( $array ) ) { return; }
     foreach ($array as $subarray) {
         $keys[] = $subarray[$subkey];
     }
@@ -65,8 +85,8 @@ $formats = json_decode($get_formats, true);
 sortBySubkey($formats, 'key_string');
 
 $data_formats = "<table width=\"70%\"><tr><td colspan=\"2\">MEETING FORMATS</td></tr>";
-$countmax = count($formats);
-for ($count = 0; $count < $countmax; $count++) {
+$countmax = count ( $formats );
+for ( $count = 0; $count < $countmax; $count++ ) {
     $data_formats .= '<tr>';
     $data_formats .= "<td>".$formats[$count]['key_string']."</td>";
     $data_formats .= "<td>".$formats[$count]['name_string']."</td>";
@@ -81,20 +101,26 @@ echo $data_formats;
 //Changes printed on date and time
 //echo "<hr>";
 
-$url = $bmlt_server. "/client_interface/xml/?switcher=GetSearchResults&get_used_formats=1&services=".$area_num."&weekdays[]=1&weekdays[]=2&weekdays[]=3&weekdays[]=4&weekdays[]=5&weekdays[]=6&weekdays[]=7&sort_keys=meeting_name" . $recurse;
+$url = $bmlt_server. "/client_interface/xml/?switcher=GetSearchResults&get_used_formats=1&services=".$area_num."&weekdays[]=1&weekdays[]=2&weekdays[]=3&weekdays[]=4&weekdays[]=5&weekdays[]=6&weekdays[]=7&sort_keys=meeting_name" . $recurse . $published_unpublished_query;
 
 // get xml file contents
 $xml = simplexml_load_file($url);
 
 // loop begins
-foreach ($xml->row as $row) {
+foreach($xml->row as $row)
+{
+
 // begin new paragraph
     echo "<div class=\"list-row\">
 					<div class=\"list-left\">
 				";
 
 // Group Name
-    echo "Group: <strong style=\"text-decoration: underline; font-size: larger;\">".$row->meeting_name."</strong>, ";
+    $unpublished = "";
+    if ($row->published == 0) {
+        $unpublished = " (UNPUBLISHED)";
+    }
+    echo "Group: <strong style=\"text-decoration: underline; font-size: larger;\">".$row->meeting_name.$unpublished."</strong>, ";
 
 // Day of the Week
     $weekday_tinyint=$row->weekday_tinyint;
@@ -140,7 +166,7 @@ foreach ($xml->row as $row) {
 
 // Published formats
     $formats = $row->formats;
-    $formats = str_replace(",", ", ", $formats);
+    $formats = str_replace(",",", ",$formats);
     echo "Published Formats: <strong>".$formats."</strong> ]</small><br>";
 
 //Address
@@ -161,8 +187,8 @@ foreach ($xml->row as $row) {
 		CHANGES:<br><br><br><br>";
 
 //echo "
-//              </div>
-//              <div class=\"list-right\">";
+//		        </div>
+//		        <div class=\"list-right\">";
 // End Paragraph
     echo "	</div>
 		</div>";
@@ -172,3 +198,4 @@ foreach ($xml->row as $row) {
 
 echo "</body>
 </html>";
+?>
