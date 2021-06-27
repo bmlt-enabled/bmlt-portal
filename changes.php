@@ -27,90 +27,87 @@ $url = $bmlt_server. "/client_interface/xml/?switcher=GetChanges&start_date=" .$
 $xml = simplexml_load_file($url);
 
 // loop begins
-foreach($xml->row as $row) {
-if( strpos( $row->meeting_name, 'YAP' ) !== false ) {
-    // dont show YAP data
-}
-else {
-// begin new paragraph
-echo "<p>";
-// show Date
-echo "<strong>Date:</strong> ".$row->date_string." - ";
-// show Change Type
-$change_type=$row->change_type;
-	if ($change_type == "comdef_change_type_change") {
-		$change_type = "Change";
-	}
-	if ($change_type == "comdef_change_type_new") {
-		$change_type = "New";
-	}
-	if ($change_type == "comdef_change_type_delete") {
-		$change_type = "DELETE";
-	}
-echo "<strong>Change Type:</strong> ".$change_type."<br/>";
-// show Meeting ID
-echo "<strong>Meeting (ID) Name:</strong> (".$row->meeting_id.") " .$row->meeting_name."<br/>";
-// show User Name
-echo "<strong>User Name:</strong> ".$row->user_name."<br/>";
-// show Service Body
-echo "<strong>Service Body:</strong> ".$row->service_body_name."</br><OL>";
-// show details
-$details=$row->details;
-  // remove root_server_uri info
- $details = str_replace(". root_server_uri was added as \"https:\" "," ",$details);
-		// Remove last . at end of details
-	$details = preg_replace('/.$/',"",$details);
-		// Remove the weird #@-@# from the format codes
-	$details = str_replace("#@-@#"," ",$details);
-		// protect email . from being replacedwith </br> tag
-	$details = preg_replace_callback(
-		'/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/',
-			function ($email) {
-				return str_replace(".","~DOT~",$email[0]);
-				},
-				$details
-			);
-		// Look for Latittude and Longitude, change . to ~DOT~
-	$details = preg_replace_callback(
-		'/from \"[0-9]+\./',
-			function ($matches) {
-				return str_replace(".","~DOT~",$matches[0]);
-				},
-				$details
-			);
-	$details = preg_replace_callback(
-		'/to \"[0-9]+\./',
-			function ($matches) {
-				return str_replace(".","~DOT~",$matches[0]);
-				},
-				$details
-			);
-	$details = preg_replace_callback(
-		'/from \"-+[0-9]+\./',
-			function ($matches) {
-				return str_replace(".","~DOT~",$matches[0]);
-				},
-				$details
-			);
-	$details = preg_replace_callback(
-		'/to \"-+[0-9]+\./',
-			function ($matches) {
-				return str_replace(".","~DOT~",$matches[0]);
-				},
-				$details
-			);
-		//Change all the . to <LI>
-	$details = str_replace(".","<LI>",$details);
-		//Change all the ~DOT~ back to .
-	$details = str_replace("~DOT~",".",$details);
-//	$details = str_replace("from \"-75</br>"," from \"-75.",$details);
-echo "<strong>Details:</strong><LI> ".$details."</OL>";
-echo "</p> <hr>";
-// end paragraph
-}
+foreach ($xml->row as $row) {
+    if (strpos($row->meeting_name, 'YAP') !== false) {
+        // dont show YAP data
+    } else {
+    // begin new paragraph
+        echo "<p>";
+    // show Date
+        echo "<strong>Date:</strong> ".$row->date_string." - ";
+    // show Change Type
+        $change_type=$row->change_type;
+        if ($change_type == "comdef_change_type_change") {
+            $change_type = "Change";
+        }
+        if ($change_type == "comdef_change_type_new") {
+            $change_type = "New";
+        }
+        if ($change_type == "comdef_change_type_delete") {
+            $change_type = "DELETE";
+        }
+        echo "<strong>Change Type:</strong> ".$change_type."<br/>";
+    // show Meeting ID
+        echo "<strong>Meeting (ID) Name:</strong> (".$row->meeting_id.") " .$row->meeting_name."<br/>";
+    // show User Name
+        echo "<strong>User Name:</strong> ".$row->user_name."<br/>";
+    // show Service Body
+        echo "<strong>Service Body:</strong> ".$row->service_body_name."</br><OL>";
+    // show details
+        $details=$row->details;
+      // remove root_server_uri info
+        $details = str_replace(". root_server_uri was added as \"https:\" ", " ", $details);
+        // Remove last . at end of details
+        $details = preg_replace('/.$/', "", $details);
+        // Remove the weird #@-@# from the format codes
+        $details = str_replace("#@-@#", " ", $details);
+        // protect email . from being replacedwith </br> tag
+        $details = preg_replace_callback(
+            '/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/',
+            function ($email) {
+                return str_replace(".", "~DOT~", $email[0]);
+            },
+            $details
+        );
+            // Look for Latittude and Longitude, change . to ~DOT~
+        $details = preg_replace_callback(
+            '/from \"[0-9]+\./',
+            function ($matches) {
+                return str_replace(".", "~DOT~", $matches[0]);
+            },
+            $details
+        );
+        $details = preg_replace_callback(
+            '/to \"[0-9]+\./',
+            function ($matches) {
+                return str_replace(".", "~DOT~", $matches[0]);
+            },
+            $details
+        );
+        $details = preg_replace_callback(
+            '/from \"-+[0-9]+\./',
+            function ($matches) {
+                return str_replace(".", "~DOT~", $matches[0]);
+            },
+            $details
+        );
+        $details = preg_replace_callback(
+            '/to \"-+[0-9]+\./',
+            function ($matches) {
+                return str_replace(".", "~DOT~", $matches[0]);
+            },
+            $details
+        );
+            //Change all the . to <LI>
+        $details = str_replace(".", "<LI>", $details);
+            //Change all the ~DOT~ back to .
+        $details = str_replace("~DOT~", ".", $details);
+    //  $details = str_replace("from \"-75</br>"," from \"-75.",$details);
+        echo "<strong>Details:</strong><LI> ".$details."</OL>";
+        echo "</p> <hr>";
+    // end paragraph
+    }
 }
 // loop ends
 
-echo "END of File<br>BMLT Changes</body></html>"
-
-?>
+echo "END of File<br>BMLT Changes</body></html>";
