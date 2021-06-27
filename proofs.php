@@ -7,25 +7,37 @@ $area_asc = $_GET['asc'];
 $area_num = $_GET['areanum'];
 $recurse = isset($_GET['recurse']) && $_GET['recurse'] == "true" ? "&recursive=1" : "";
 $show_unpublished = isset($_GET['unpublished']) ? $_GET['unpublished'] : "false";
+$sortby_day = isset($_GET['sortby']) && $_GET['sortby'] == "day";
 $today=date("Y-m-d");
 
 $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERVER['SERVER_PORT'] == 443) ? "https://" : "http://";
 $current_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 // Remove parameter from query string
-$filtered_url =rtrim(preg_replace('~(\?|&)'.'unpublished'.'=[^&]*~', '$1', $current_url), "&");
+
+function filter_url($pattern, $url) {
+    return rtrim(preg_replace('~(\?|&)'.$pattern.'=[^&]*~', '$1', $url), "&");
+}
+
+if ($sortby_day) {
+    $sortby_query = "weekday_tinyint,start_time";
+    $sortby_link = "<a href=\"".filter_url('sortby', $current_url)."\" class=\"no-print\">Sort By Meeting Name</a>";
+} else {
+    $sortby_query = "meeting_name";
+    $sortby_link = "<a href=\"".filter_url('sortby', $current_url)."&sortby=day\" class=\"no-print\">Sort By Day/Time</a>";
+}
 
 if ($show_unpublished == "true") {
     $published_unpublished_query = "&advanced_published=-1";
     $published_unpublished_header = " (Unpublished Meetings Only)";
-    $published_unpublished = "<a href=\"".$filtered_url."&unpublished=false\" class=\"no-print\">Show Published</a>";
+    $published_unpublished_link = "<a href=\"".filter_url('unpublished', $current_url)."&unpublished=false\" class=\"no-print\">Show Published</a>";
 } elseif ($show_unpublished == "both") {
     $published_unpublished_query = "&advanced_published=0";
     $published_unpublished_header = "";
-    $published_unpublished = "<a href=\"".$filtered_url."&unpublished=true\" class=\"no-print\">Show Published</a>";
+    $published_unpublished_link = "<a href=\"".filter_url('unpublished', $current_url)."&unpublished=both\" class=\"no-print\">Show Published</a>";
 } else {
     $published_unpublished_query = "&advanced_published=1";
     $published_unpublished_header = "";
-    $published_unpublished = "<a href=\"".$filtered_url."&unpublished=true\" class=\"no-print\">Show Unpublished</a>";
+    $published_unpublished_link = "<a href=\"".filter_url('unpublished', $current_url)."&unpublished=true\" class=\"no-print\">Show Unpublished</a>";
 }
 
 echo "<!DOCTYPE html>
@@ -67,7 +79,9 @@ body>div {
 </head>
 
 <body>".
-    $published_unpublished
+    $published_unpublished_link.
+    "&nbsp;&nbsp;".
+    $sortby_link
     ."<h2>Meeting List Proof Report for ".$area_asc.$published_unpublished_header."</h2>
 
 Printed on: " .date("l jS \of F Y h:i A") . "
@@ -105,7 +119,7 @@ echo $data_formats;
 //Changes printed on date and time
 //echo "<hr>";
 
-$url = $bmlt_server. "/client_interface/xml/?switcher=GetSearchResults&get_used_formats=1&services=".$area_num."&weekdays[]=1&weekdays[]=2&weekdays[]=3&weekdays[]=4&weekdays[]=5&weekdays[]=6&weekdays[]=7&sort_keys=meeting_name" . $recurse . $published_unpublished_query;
+$url = $bmlt_server. "/client_interface/xml/?switcher=GetSearchResults&get_used_formats=1&services=".$area_num."&weekdays[]=1&weekdays[]=2&weekdays[]=3&weekdays[]=4&weekdays[]=5&weekdays[]=6&weekdays[]=7&sort_keys=" . $sortby_query . $recurse . $published_unpublished_query;
 
 // get xml file contents
 $xml = simplexml_load_file($url);
@@ -202,4 +216,3 @@ foreach($xml->row as $row)
 
 echo "</body>
 </html>";
-?>
