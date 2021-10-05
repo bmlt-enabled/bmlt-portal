@@ -14,7 +14,8 @@ $protocol = ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off') || $_SERV
 $current_url = $protocol . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 // Remove parameter from query string
 
-function filter_url($pattern, $url) {
+function filter_url($pattern, $url)
+{
     return rtrim(preg_replace('~(\?|&)'.$pattern.'=[^&]*~', '$1', $url), "&");
 }
 
@@ -90,8 +91,11 @@ Printed on: " .date("l jS \of F Y h:i A") . "
 ";
 
 
-function sortBySubkey(&$array, $subkey, $sortType = SORT_ASC) {
-    if ( empty( $array ) ) { return; }
+function sortBySubkey(&$array, $subkey, $sortType = SORT_ASC)
+{
+    if (empty($array)) {
+        return;
+    }
     foreach ($array as $subarray) {
         $keys[] = $subarray[$subkey];
     }
@@ -103,8 +107,8 @@ $formats = json_decode($get_formats, true);
 sortBySubkey($formats, 'key_string');
 
 $data_formats = "<table width=\"70%\"><tr><td colspan=\"2\">MEETING FORMATS</td></tr>";
-$countmax = count ( $formats );
-for ( $count = 0; $count < $countmax; $count++ ) {
+$countmax = count($formats);
+for ($count = 0; $count < $countmax; $count++) {
     $data_formats .= '<tr>';
     $data_formats .= "<td>".$formats[$count]['key_string']."</td>";
     $data_formats .= "<td>".$formats[$count]['name_string']."</td>";
@@ -125,9 +129,7 @@ $url = $bmlt_server. "/client_interface/xml/?switcher=GetSearchResults&get_used_
 $xml = simplexml_load_file($url);
 
 // loop begins
-foreach($xml->row as $row)
-{
-
+foreach ($xml->row as $row) {
 // begin new paragraph
     echo "<div class=\"list-row\">
 					<div class=\"list-left\">
@@ -184,8 +186,23 @@ foreach($xml->row as $row)
 
 // Published formats
     $formats = $row->formats;
-    $formats = str_replace(",",", ",$formats);
+    $formats = str_replace(",", ", ", $formats);
     echo "Published Formats: <strong>".$formats."</strong> ]</small><br>";
+
+// Virtual Meeting Additional Info
+    if (isset($row->phone_meeting_number) || isset($row->virtual_meeting_link) || isset($row->virtual_meeting_additional_info)) {
+        echo "Virtual Info: ";
+        if (isset($row->phone_meeting_number)) {
+            echo "[Phone: <strong> ".$row->phone_meeting_number."</strong>] ";
+        }
+        if (isset($row->virtual_meeting_link)) {
+            echo "[Link: <strong> ".$row->virtual_meeting_link."</strong>] ";
+        }
+        if (isset($row->virtual_meeting_additional_info)) {
+            echo "[Additional Info: <strong> ".$row->virtual_meeting_additional_info."</strong>]";
+        }
+        echo "<br>";
+    }
 
 //Address
     echo "
@@ -205,8 +222,8 @@ foreach($xml->row as $row)
 		CHANGES:<br><br><br><br>";
 
 //echo "
-//		        </div>
-//		        <div class=\"list-right\">";
+//              </div>
+//              <div class=\"list-right\">";
 // End Paragraph
     echo "	</div>
 		</div>";
