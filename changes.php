@@ -6,8 +6,8 @@ $area_asc = $_GET['asc'];
 $area_num = $_GET['areanum'];
 $how_many_days = $_REQUEST['hdays'];
 
-$today=date("Y-m-d");
-$dateminus=date('Y-m-d', strtotime("-$how_many_days days"));
+$today = date("Y-m-d");
+$dateminus = date('Y-m-d', strtotime("-$how_many_days days"));
 
 
 //Changes printed on date and time

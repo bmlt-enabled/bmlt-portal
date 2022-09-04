@@ -48,7 +48,6 @@ ENV APACHE_LOCK_DIR /var/lock/apache2
 ENV APACHE_PID_FILE /var/run/apache2.pid
 RUN /bin/bash -c "source /etc/apache2/envvars"
 RUN sed -i 's/Listen 80/Listen 8000/' /etc/apache2/ports.conf
-RUN sed -i 's/^\tOptions Indexes FollowSymLinks/\tOptions FollowSymLinks/' /etc/apache2/apache2.conf
 COPY docker/000-default.conf /etc/apache2/sites-available/000-default.conf
 RUN ln -sf /proc/self/fd/1 /var/log/apache2/access.log && \
     ln -sf /proc/self/fd/1 /var/log/apache2/error.log
@@ -56,7 +55,7 @@ RUN a2enmod rewrite \
      && a2dismod php8.1 \
      && a2enmod php8.0
 
-#RUN rm /var/www/html/index.html
+RUN rm /var/www/html/index.html
 
 # Configure apache php
 ENV PHP_INI_PATH /etc/php/8.0/apache2/php.ini
