@@ -5,7 +5,7 @@ on:
     branches: [ 'master' ]
 
 jobs:
-  deploy-crouton-latest:
+  deploy-bmlt-portal-latest:
     runs-on: ubuntu-latest
     permissions:
       id-token: write
