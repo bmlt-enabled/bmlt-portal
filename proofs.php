@@ -123,13 +123,13 @@ echo $data_formats;
 //Changes printed on date and time
 //echo "<hr>";
 
-$url = $bmlt_server. "/client_interface/xml/?switcher=GetSearchResults&get_used_formats=1&services=".$area_num."&weekdays[]=1&weekdays[]=2&weekdays[]=3&weekdays[]=4&weekdays[]=5&weekdays[]=6&weekdays[]=7&sort_keys=" . $sortby_query . $recurse . $published_unpublished_query;
+$url = $bmlt_server. "/client_interface/json/?switcher=GetSearchResults&get_used_formats=1&services=".$area_num."&weekdays[]=1&weekdays[]=2&weekdays[]=3&weekdays[]=4&weekdays[]=5&weekdays[]=6&weekdays[]=7&sort_keys=" . $sortby_query . $recurse . $published_unpublished_query;
 
-// get xml file contents
-$xml = simplexml_load_file($url);
+// get json file contents
+$json = json_decode(file_get_contents($url));
 
 // loop begins
-foreach ($xml->row as $row) {
+foreach ($json->meetings as $row) {
 // begin new paragraph
     echo "<div class=\"list-row\">
 					<div class=\"list-left\">

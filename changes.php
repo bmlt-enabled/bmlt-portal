@@ -22,12 +22,13 @@ echo "
 		Changes for last " .$how_many_days. " days from today: " .date("l jS \of F Y h:i A") . "<br>
 		<hr>";
 
-$url = $bmlt_server. "/client_interface/xml/?switcher=GetChanges&start_date=" .$dateminus. "&end_date=" .$today. "&service_body_id=" .$area_num;
+$url = $bmlt_server. "/client_interface/json/?switcher=GetChanges&start_date=" .$dateminus. "&end_date=" .$today. "&service_body_id=" .$area_num;
 // get xml file contents
-$xml = simplexml_load_file($url);
+
+$json = json_decode(file_get_contents($url));
 
 // loop begins
-foreach ($xml->row as $row) {
+foreach ($json as $row) {
     if (strpos($row->meeting_name, 'YAP') !== false) {
         // dont show YAP data
     } else {
