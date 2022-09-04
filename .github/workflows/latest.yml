@@ -14,12 +14,35 @@ jobs:
       - uses: actions/checkout@v2
         id: code-checkout
 
+      - name: Validate composer.json and composer.lock
+        id: composer-validate
+        run: composer validate
+
+      - name: Cache Composer packages
+        id: composer-cache
+        uses: actions/cache@v2
+        with:
+          path: vendor
+          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-php-
+
+      - name: Install dependencies
+        if: steps.composer-cache.outputs.cache-hit != 'true'
+        id: install-dependencies
+        run: composer install --no-dev --prefer-dist --no-progress --no-suggest --classmap-authoritative
+
       - name: Prepare zip file
         run: |
-          export ZIP_FILENAME=bmlt-portal.zip
-          echo "ZIP_FILENAME=${ZIP_FILENAME}" >> $GITHUB_ENV
-          find ./ -name '*.php' | xargs chmod 644
-          git archive --format=zip --output=${ZIP_FILENAME} ${GITHUB_SHA}
+          export ARTIFACT_FILE=bmlt-portal
+          export ARTIFACT_FILENAME=bmlt-portal.zip
+          echo "ARTIFACT_FILENAME=${ARTIFACT_FILENAME}" >> $GITHUB_ENV
+          git archive --format=zip --output=${ARTIFACT_FILENAME} ${GITHUB_SHA}
+          unzip ${ARTIFACT_FILENAME}
+          rm ${ARTIFACT_FILENAME}
+          echo ${GITHUB_SHA} > ${ARTIFACT_FILE}/build.txt
+          cp -R vendor ${ARTIFACT_FILE}/
+          zip -r -9 ${ARTIFACT_FILENAME} ${ARTIFACT_FILE}
 
       - name: configure aws credentials
         uses: aws-actions/configure-aws-credentials@v1
@@ -30,4 +53,4 @@ jobs:
 
       - name: copy artifact to s3
         run: |
-          aws s3 cp ${ZIP_FILENAME} s3://${{ secrets.S3_BUCKET }}/bmlt-portal/bmlt-portal-build${GITHUB_RUN_NUMBER}-${GITHUB_SHA}
+          aws s3 cp ${ARTIFACT_FILENAME} s3://${{ secrets.S3_BUCKET }}/bmlt-portal/bmlt-portal-build${GITHUB_RUN_NUMBER}-${GITHUB_SHA}
