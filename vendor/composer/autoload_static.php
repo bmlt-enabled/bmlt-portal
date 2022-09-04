@@ -4,13 +4,9 @@
 
 namespace Composer\Autoload;
 
-class ComposerStaticInit211839d18b0c3e24c5457707508f819b
+class ComposerStaticInitfbea346f60dfda54dc824b1eeae57196
 {
     public static $prefixLengthsPsr4 = array (
-        'T' => 
-        array (
-            'Twilio\\' => 7,
-        ),
         'P' => 
         array (
             'PHPMailer\\PHPMailer\\' => 20,
@@ -18,21 +14,22 @@ class ComposerStaticInit211839d18b0c3e24c5457707508f819b
     );
 
     public static $prefixDirsPsr4 = array (
-        'Twilio\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/twilio/sdk/Twilio',
-        ),
         'PHPMailer\\PHPMailer\\' => 
         array (
             0 => __DIR__ . '/..' . '/phpmailer/phpmailer/src',
         ),
     );
 
+    public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
-            $loader->prefixLengthsPsr4 = ComposerStaticInit211839d18b0c3e24c5457707508f819b::$prefixLengthsPsr4;
-            $loader->prefixDirsPsr4 = ComposerStaticInit211839d18b0c3e24c5457707508f819b::$prefixDirsPsr4;
+            $loader->prefixLengthsPsr4 = ComposerStaticInitfbea346f60dfda54dc824b1eeae57196::$prefixLengthsPsr4;
+            $loader->prefixDirsPsr4 = ComposerStaticInitfbea346f60dfda54dc824b1eeae57196::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInitfbea346f60dfda54dc824b1eeae57196::$classMap;
 
         }, null, ClassLoader::class);
     }
