@@ -16,3 +16,11 @@ build: composer ## Docker Build
 .PHONY: run
 run:  ## Docker Run
 	docker run -t -p 8888:8000 -v $(shell pwd):/var/www/html -w /var/www/html bmlt-portal:latest
+
+.PHONY: lint
+lint:  ## Lint
+	vendor/squizlabs/php_codesniffer/bin/phpcs --warning-severity=6 --standard=PSR2 --ignore=vendor --extensions=php --report=full .
+
+.PHONY: lint-fix
+lint-fix:  ## Lint Fix
+	vendor/squizlabs/php_codesniffer/bin/phpcbf --warning-severity=6 --standard=PSR2 --ignore=vendor --extensions=php --report=full .
