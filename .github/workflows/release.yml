@@ -1,0 +1,80 @@
+name: 'release'
+
+on:
+  push:
+    tags: ['*']
+
+jobs:
+  deploy-bmlt-portal-release:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v2
+        id: code-checkout
+
+      - name: Prepare zip file
+        run: |
+          export ZIP_FILENAME=bmlt-portal.zip
+          echo "ZIP_FILENAME=${ZIP_FILENAME}" >> $GITHUB_ENV
+          find ./ -name '*.php' | xargs chmod 644
+          git archive --format=zip --output=${ZIP_FILENAME} ${GITHUB_SHA}
+          curl -sLO https://raw.githubusercontent.com/bmlt-enabled/release-notes-tool/master/gh-release-notes.sh
+          chmod +x gh-release-notes.sh
+          ./gh-release-notes.sh CHANGELOG.md "##"
+
+      - name: Prepare artifact metadata
+        id: prepare_artifact_metadata
+        run: |
+          echo ::set-output name=ARTIFACT_PATH::./${ZIP_FILENAME}
+          echo ::set-output name=ARTIFACT_NAME::${ZIP_FILENAME}
+
+      - name: Release beta
+        if: contains(github.ref, 'beta')
+        id: beta_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          prerelease: true
+          draft: false
+
+      - name: Upload Beta Asset
+        if: contains(github.ref, 'beta')
+        id: beta-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.beta_release.outputs.upload_url }}
+          asset_path: ${{ steps.prepare_artifact_metadata.outputs.ARTIFACT_PATH }}
+          asset_name: ${{ steps.prepare_artifact_metadata.outputs.ARTIFACT_NAME }}
+          asset_content_type: application/zip
+
+      - name: Release stable
+        if: "!contains(github.ref, 'beta')"
+        id: stable_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          body_path: "changelog.txt"
+          prerelease: false
+          draft: false
+
+      - name: Upload Stable Asset
+        if: "!contains(github.ref, 'beta')"
+        id: stable-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.stable_release.outputs.upload_url }}
+          asset_path: ${{ steps.prepare_artifact_metadata.outputs.ARTIFACT_PATH }}
+          asset_name: ${{ steps.prepare_artifact_metadata.outputs.ARTIFACT_NAME }}
+          asset_content_type: application/zip

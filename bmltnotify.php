@@ -121,7 +121,7 @@ if (empty($xml)) {
     $mail->Username = $smtp_username;
     $mail->Password = $smtp_password;
     $mail->SMTPSecure = $smtp_secure;
-    if ($smtp_alt_port) {
+    if (isset($smtp_alt_port)) {
         $mail->Port = $smtp_alt_port;
     } elseif ($smtp_secure == 'tls') {
         $mail->Port = 587;
