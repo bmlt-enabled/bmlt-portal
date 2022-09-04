@@ -37,7 +37,7 @@ jobs:
           export ARTIFACT_FILE=bmlt-portal
           export ARTIFACT_FILENAME=bmlt-portal.zip
           echo "ARTIFACT_FILENAME=${ARTIFACT_FILENAME}" >> $GITHUB_ENV
-          git archive --format=zip --output=${ARTIFACT_FILENAME} ${GITHUB_SHA}
+          git archive --format=zip --output=${ARTIFACT_FILENAME} --prefix=${ARTIFACT_FILE}/ ${GITHUB_SHA}
           unzip ${ARTIFACT_FILENAME}
           rm ${ARTIFACT_FILENAME}
           echo ${GITHUB_SHA} > ${ARTIFACT_FILE}/build.txt
