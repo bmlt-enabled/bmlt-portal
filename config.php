@@ -1,11 +1,11 @@
 <?php
 static $timezone = 'America/New_York';
-static $bmlt_server = 'https://bmlt.sezf.org/main_server/';
-static $service_body_name = 'Carolina Region';
-static $service_body_shortname = 'CRNA';
-static $service_body_website = 'https://crna.org';
-static $parent_service_body_id = '119';  // the BMLT parent service body id number
-static $howmanydays = '30';  // this should be set to the same number of days your cron job is set to
+static $bmlt_server = '';
+static $service_body_name = '';
+static $service_body_shortname = '';
+static $service_body_website = '';
+static $parent_service_body_id = '';  // the BMLT parent service body id number
+static $howmanydays = '';  // this should be set to the same number of days your cron job is set to
 
 
 // Notifier Config Options
