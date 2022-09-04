@@ -1,0 +1,33 @@
+name: 'latest'
+
+on:
+  push:
+    branches: [ 'master' ]
+
+jobs:
+  deploy-crouton-latest:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - uses: actions/checkout@v2
+        id: code-checkout
+
+      - name: Prepare zip file
+        run: |
+          export ZIP_FILENAME=bmlt-portal.zip
+          echo "ZIP_FILENAME=${ZIP_FILENAME}" >> $GITHUB_ENV
+          find ./ -name '*.php' | xargs chmod 644
+          git archive --format=zip --output=${ZIP_FILENAME} ${GITHUB_SHA}
+
+      - name: configure aws credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          role-to-assume: arn:aws:iam::${{ secrets.AWS_ACCOUNT_ID }}:role/github-actions/gh-ci-s3-artifact
+          role-session-name: gh-actions-bmlt-portal
+          aws-region: us-east-1
+
+      - name: copy artifact to s3
+        run: |
+          aws s3 cp ${ZIP_FILENAME} s3://${{ secrets.S3_BUCKET }}/bmlt-portal/bmlt-portal-build${GITHUB_RUN_NUMBER}-${GITHUB_SHA}

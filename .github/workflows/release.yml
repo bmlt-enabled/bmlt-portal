@@ -7,9 +7,6 @@ on:
 jobs:
   deploy-bmlt-portal-release:
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write
-      contents: write
     steps:
       - uses: actions/checkout@v2
         id: code-checkout
