@@ -1,4 +1,5 @@
-# bmlt-portal
+# BMLT Portal
+
 Additional entry point into the bmlt that offers easy access to meeting changes in the server as well as proof reports meant to be accessed by ASCs for GSRs to go over and 'proof' their meeting data.
 
 # install
