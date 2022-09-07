@@ -11,16 +11,16 @@ $dateminus=date('Y-m-d', strtotime("-$howmanydays days"));
 // show beginning header
 $message = "<H2>" .$service_body_name. " CHANGES</H2>Changes for last $howmanydays day(s) from " .date("l jS \of F Y h:i A") . "<br><hr>";
 
-$url = $bmlt_server. "/client_interface/xml/?switcher=GetChanges&start_date=" .$dateminus. "&end_date=" .$today. "&service_body_id=" .$notify_service_body_id;
+$url = $bmlt_server. "/client_interface/json/?switcher=GetChanges&start_date=" .$dateminus. "&end_date=" .$today. "&service_body_id=" .$notify_service_body_id;
 
-// get xml file contents
-$xml = simplexml_load_file($url);
+$json = file_get_contents($url);
 
-if (empty($xml)) {
+if (empty($json)) {
   // if no changes found do nothing
 } else {
   // loop begins
-    foreach ($xml->row as $row) {
+    $json = json_decode($url);
+    foreach ($json as $row) {
         if (strpos($row->meeting_name, '_YAP_') !== false) {
           // dont show YAP data
         } else {
