@@ -108,13 +108,16 @@ sortBySubkey($formats, 'key_string');
 
 $data_formats = "<table width=\"70%\"><tr><td colspan=\"2\">MEETING FORMATS</td></tr>";
 $countmax = count($formats);
-for ($count = 0; $count < $countmax; $count++) {
+for ($count = 0; $count < $countmax; $count += 2) {
     $data_formats .= '<tr>';
     $data_formats .= "<td>".$formats[$count]['key_string']."</td>";
     $data_formats .= "<td>".$formats[$count]['name_string']."</td>";
-    $count++;
-    $data_formats .= "<td>".$formats[$count]['key_string']."</td>";
-    $data_formats .= "<td>".$formats[$count]['name_string']."</td>";
+    if (isset($formats[$count + 1])) {
+        $data_formats .= "<td>".$formats[$count + 1]['key_string']."</td>";
+        $data_formats .= "<td>".$formats[$count + 1]['name_string']."</td>";
+    } else {
+        $data_formats .= "<td colspan=\"2\"></td>";
+    }
     $data_formats .= "</tr>";
 }
 $data_formats .= "</table>";
