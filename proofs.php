@@ -1,5 +1,6 @@
 <?php
 include 'config.php';
+require_once 'functions.php';
 
 date_default_timezone_set("$timezone");
 
@@ -39,6 +40,15 @@ if ($show_unpublished == "true") {
     $published_unpublished_query = "&advanced_published=1";
     $published_unpublished_header = "";
     $published_unpublished_link = "<a href=\"".filter_url('unpublished', $current_url)."&unpublished=true\" class=\"no-print\">Show Unpublished</a>";
+}
+
+// Load the formats and meetings before any output so a failed fetch shows a
+// clear message instead of a blank 500.
+$formats = bmlt_get_json($bmlt_server . "/client_interface/json/?switcher=GetFormats", true);
+$url = $bmlt_server. "/client_interface/json/?switcher=GetSearchResults&get_used_formats=1&services=".$area_num."&weekdays[]=1&weekdays[]=2&weekdays[]=3&weekdays[]=4&weekdays[]=5&weekdays[]=6&weekdays[]=7&sort_keys=" . $sortby_query . $recurse . $published_unpublished_query;
+$json = bmlt_get_json($url);
+if ($formats === null || $json === null) {
+    bmlt_fail($bmlt_server);
 }
 
 echo "<!DOCTYPE html>
@@ -102,8 +112,6 @@ function sortBySubkey(&$array, $subkey, $sortType = SORT_ASC)
     array_multisort($keys, $sortType, $array);
 }
 
-$get_formats = file_get_contents($bmlt_server . "/client_interface/json/?switcher=GetFormats");
-$formats = json_decode($get_formats, true);
 sortBySubkey($formats, 'key_string');
 
 $data_formats = "<table width=\"70%\"><tr><td colspan=\"2\">MEETING FORMATS</td></tr>";
@@ -126,13 +134,8 @@ echo $data_formats;
 //Changes printed on date and time
 //echo "<hr>";
 
-$url = $bmlt_server. "/client_interface/json/?switcher=GetSearchResults&get_used_formats=1&services=".$area_num."&weekdays[]=1&weekdays[]=2&weekdays[]=3&weekdays[]=4&weekdays[]=5&weekdays[]=6&weekdays[]=7&sort_keys=" . $sortby_query . $recurse . $published_unpublished_query;
-
-// get json file contents
-$json = json_decode(file_get_contents($url));
-
 // loop begins
-foreach ($json->meetings as $row) {
+foreach ($json->meetings ?? [] as $row) {
 // begin new paragraph
     echo "<div class=\"list-row\">
 					<div class=\"list-left\">

@@ -1,5 +1,6 @@
 <?php
 include 'config.php';
+require_once 'functions.php';
 
 date_default_timezone_set("$timezone");
 $area_asc = $_GET['asc'];
@@ -9,6 +10,14 @@ $how_many_days = $_REQUEST['hdays'];
 $today = date("Y-m-d");
 $dateminus = date('Y-m-d', strtotime("-$how_many_days days"));
 
+$url = $bmlt_server. "/client_interface/json/?switcher=GetChanges&start_date=" .$dateminus. "&end_date=" .$today. "&service_body_id=" .$area_num;
+
+// Load the changes before any output so a failed fetch shows a clear message
+// instead of a blank 500.
+$json = bmlt_get_json($url);
+if ($json === null) {
+    bmlt_fail($bmlt_server);
+}
 
 //Changes printed on date and time
 echo "
@@ -21,11 +30,6 @@ echo "
 		<H2>" .$area_asc. " CHANGES</H2>
 		Changes for last " .$how_many_days. " days from today: " .date("l jS \of F Y h:i A") . "<br>
 		<hr>";
-
-$url = $bmlt_server. "/client_interface/json/?switcher=GetChanges&start_date=" .$dateminus. "&end_date=" .$today. "&service_body_id=" .$area_num;
-// get xml file contents
-
-$json = json_decode(file_get_contents($url));
 
 // loop begins
 foreach ($json as $row) {

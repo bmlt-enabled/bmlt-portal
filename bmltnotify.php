@@ -1,5 +1,6 @@
 <?php
 include 'config.php';
+require_once 'functions.php';
 require_once 'vendor/autoload.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
@@ -13,13 +14,20 @@ $message = "<H2>" .$service_body_name. " CHANGES</H2>Changes for last $howmanyda
 
 $url = $bmlt_server. "/client_interface/json/?switcher=GetChanges&start_date=" .$dateminus. "&end_date=" .$today. "&service_body_id=" .$notify_service_body_id;
 
-$json = file_get_contents($url);
+$body = bmlt_http_get($url);
+
+if ($body === false) {
+    http_response_code(502);
+    echo "Could not reach the BMLT server at " . $bmlt_server;
+    exit;
+}
+
+$json = json_decode($body);
 
 if (empty($json)) {
   // if no changes found do nothing
 } else {
   // loop begins
-    $json = json_decode($url);
     foreach ($json as $row) {
         if (strpos($row->meeting_name, '_YAP_') !== false) {
           // dont show YAP data

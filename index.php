@@ -1,7 +1,15 @@
 <?php
 include 'config.php';
+require_once 'functions.php';
 
 date_default_timezone_set("$timezone");
+
+// Load the service bodies before any output so a failed fetch shows a clear
+// message instead of a blank 500.
+$gsb_array = bmlt_get_json($bmlt_server . "/client_interface/json/?switcher=GetServiceBodies", true);
+if ($gsb_array === null) {
+    bmlt_fail($bmlt_server);
+}
 ?>
 <!DOCTYPE HTML>
 <html>
@@ -81,8 +89,6 @@ date_default_timezone_set("$timezone");
                         }
                         array_multisort($keys, $sortType, $array);
                     }
-                    $get_service_bodies = file_get_contents($bmlt_server . "/client_interface/json/?switcher=GetServiceBodies");
-                    $gsb_array = json_decode($get_service_bodies, true);
                     sortBySubkey($gsb_array, 'name');
                     $changes = "";
                     $changes_psb = "";
