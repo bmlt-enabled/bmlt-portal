@@ -1,6 +1,6 @@
 <?php
 static $timezone = 'America/New_York';
-static $bmlt_server = '';
+static $bmlt_server = 'https://bmlt.sezf.org/main_server/';
 static $service_body_name = '';
 static $service_body_shortname = '';
 static $service_body_website = '';

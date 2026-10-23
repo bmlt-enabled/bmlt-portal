@@ -4,7 +4,7 @@
 
 // Identifies the portal to the BMLT server in the User-Agent header. Some
 // servers and WAFs reject requests that send no (or a default PHP) User-Agent.
-define('BMLT_PORTAL_USER_AGENT', 'bmlt-portal/1.2.0 (+https://github.com/bmlt-enabled/bmlt-portal)');
+define('BMLT_PORTAL_USER_AGENT', 'bmlt-portal/1.3.0 (+https://github.com/bmlt-enabled/bmlt-portal)');
 
 /**
  * Fetch a URL and return the response body, or false on failure.
@@ -112,33 +112,37 @@ function bmlt_weekday_name($weekday): string
 /**
  * Turn a change's "details" string into an HTML list.
  *
- * BMLT packs several changes into one sentence-delimited string. We split on
- * the periods, but first protect the periods that live inside emails and
- * latitude/longitude values so they aren't mistaken for sentence breaks.
+ * BMLT packs several field changes into one string, each ending with a period
+ * that sits OUTSIDE the quoted from/to values, e.g.
+ *   Street Address was changed from "..." to "...". County was added as "...".
+ * We split only on those out-of-quote periods, so periods inside a value
+ * (addresses, free-text comments, decimals, coordinates, emails) are kept
+ * rather than breaking the line. Each item is HTML-escaped.
  */
 function bmlt_format_change_details(string $details): string
 {
-    // Remove root_server_uri noise.
+    // Remove root_server_uri noise and the format-code separator.
     $details = str_replace(". root_server_uri was added as \"https:\" ", " ", $details);
-    // Drop the trailing period.
-    $details = preg_replace('/.$/', "", $details);
-    // Remove the format-code separator.
     $details = str_replace("#@-@#", " ", $details);
+    // Drop the trailing terminator period so it doesn't make an empty item.
+    $details = preg_replace('/\.\s*$/', '', rtrim($details));
 
-    // Protect periods inside emails and coordinates before we split on periods.
-    $protect = fn ($matches) => str_replace(".", "~DOT~", $matches[0]);
-    $protectPatterns = [
-        '/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/',
-        '/from \"[0-9]+\./',
-        '/to \"[0-9]+\./',
-        '/from \"-+[0-9]+\./',
-        '/to \"-+[0-9]+\./',
-    ];
-    $details = preg_replace_callback($protectPatterns, $protect, $details);
+    // Split into statements at periods that are outside the quoted values.
+    $items = [''];
+    $inQuotes = false;
+    for ($i = 0, $len = strlen($details); $i < $len; $i++) {
+        $char = $details[$i];
+        if ($char === '"') {
+            $inQuotes = !$inQuotes;
+            $items[count($items) - 1] .= $char;
+        } elseif ($char === '.' && !$inQuotes) {
+            $items[] = '';
+        } else {
+            $items[count($items) - 1] .= $char;
+        }
+    }
 
-    // Each remaining period marks a new change; restore the protected periods.
-    $details = str_replace(".", "<LI>", $details);
-    return str_replace("~DOT~", ".", $details);
+    return implode('<LI>', array_map('bmlt_e', $items));
 }
 
 /**

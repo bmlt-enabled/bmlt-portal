@@ -23,7 +23,7 @@ echo "
 	<!DOCTYPE html>
 		<html>
 			<head>
-				<link rel=\"stylesheet\" type=\"text/css\" href=\"changes.css\">
+				<link rel=\"stylesheet\" type=\"text/css\" href=\"assets/css/changes.css\">
 			</head>
 	<body>
 		<H2>" .bmlt_e($area_asc). " CHANGES</H2>
