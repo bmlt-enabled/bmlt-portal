@@ -80,6 +80,33 @@ function bmlt_sort_by_subkey(array &$rows, string $subkey, int $sortType = SORT_
 }
 
 /**
+ * Collect every service body nested under $parentId, at any depth.
+ *
+ * Service bodies form a tree (Zone -> Region -> Metro/sub-region -> Area), so a
+ * one-level "parent_id == $parentId" filter misses Areas that sit under a Metro
+ * committee. This walks the whole subtree so those Areas are included too.
+ */
+function bmlt_descendant_service_bodies(array $allBodies, $parentId): array
+{
+    // Index bodies by their parent id for an O(n) traversal.
+    $childrenByParent = [];
+    foreach ($allBodies as $body) {
+        $childrenByParent[(string) $body['parent_id']][] = $body;
+    }
+
+    $descendants = [];
+    $queue = [(string) $parentId];
+    while ($queue) {
+        $current = array_shift($queue);
+        foreach ($childrenByParent[$current] ?? [] as $child) {
+            $descendants[] = $child;
+            $queue[] = (string) $child['id'];
+        }
+    }
+    return $descendants;
+}
+
+/**
  * Map a BMLT change_type code to a human-readable label.
  */
 function bmlt_change_type_label(string $changeType): string

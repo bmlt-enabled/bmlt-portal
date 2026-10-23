@@ -1,4 +1,5 @@
 ## 1.3.0 (October 23, 2026)
+* List Areas nested under a Metro/sub-region when pointing at a Region, instead of only the Region's direct children (#5).
 * Fix change details splitting a single change across multiple list items when a value (address, comment, date) contained a period.
 * Fix empty Changes and Proof Reports tables on PHP 8 when no parent service body is configured.
 * Fix proof report links applying the "recurse" flag to the wrong service bodies.

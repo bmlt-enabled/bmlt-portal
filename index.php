@@ -11,23 +11,21 @@ if ($gsb_array === null) {
     bmlt_fail($bmlt_server);
 }
 
+// Decide which service bodies to list. When a parent is configured we show
+// every service body nested beneath it (at any depth, so Areas under a Metro
+// committee are included), optionally with the parent itself. An empty config
+// value counts as "not configured", in which case we show them all.
 bmlt_sort_by_subkey($gsb_array, 'name');
 
-// Decide which service bodies to list. When a parent is configured we show its
-// children (optionally including the parent itself); otherwise we show them all.
-// An empty config value counts as "not configured".
 if (!empty($parent_service_body_id)) {
-    $service_bodies = array_filter(
-        $gsb_array,
-        fn ($sb) => $sb['parent_id'] == $parent_service_body_id
-    );
+    $service_bodies = bmlt_descendant_service_bodies($gsb_array, $parent_service_body_id);
     if (!empty($include_parent_service_body_id)) {
         $key = array_search($parent_service_body_id, array_column($gsb_array, 'id'));
         if ($key !== false) {
             $service_bodies[] = $gsb_array[$key];
         }
-        bmlt_sort_by_subkey($service_bodies, 'name');
     }
+    bmlt_sort_by_subkey($service_bodies, 'name');
 } else {
     $service_bodies = $gsb_array;
 }
@@ -123,7 +121,7 @@ if (!empty($parent_service_body_id)) {
                     <tbody>
                     <?php
                     foreach ($service_bodies as $row_proofs) {
-                        $recurse = in_array($row_proofs['type'], ['RS', 'ZF'], true) ? "&recurse=true" : "";
+                        $recurse = in_array($row_proofs['type'], ['RS', 'ZF', 'MA'], true) ? "&recurse=true" : "";
                         $query = "asc=" . urlencode($row_proofs['name']) . "&areanum=" . urlencode((string) $row_proofs['id']);
                         echo "<tr><td>" . bmlt_e($row_proofs['name']) . "</td><td>"
                             . "<a href=\"proofs.php?" . $query . $recurse
