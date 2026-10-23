@@ -1,0 +1,20 @@
+# Spin up the BMLT Portal locally on Apache + PHP (PHP 8.0, matching production).
+#
+#   docker compose up --build        # build and start, serving on http://localhost:8888
+#   docker compose down              # stop and remove
+#
+# The project directory is bind-mounted into the web root, so edits to the PHP
+# files are picked up on the next request without rebuilding. Remember to set
+# your values in config.php first (at minimum $bmlt_server).
+services:
+  bmlt-portal:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    image: bmlt-portal:latest
+    container_name: bmlt-portal
+    ports:
+      - "8888:8000"
+    volumes:
+      - .:/var/www/html
+    working_dir: /var/www/html

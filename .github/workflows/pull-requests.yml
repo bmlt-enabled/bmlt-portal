@@ -1,34 +1,21 @@
-name: 'pull-request'
+name: "pull-request"
 
 on:
   pull_request:
-    branches: [ 'master' ]
+    branches: ["main"]
 
 jobs:
   lint:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-        id: code-checkout
+      - name: Check out code 🛒
+        uses: actions/checkout@v7
 
-      - name: Validate composer.json and composer.lock
-        id: composer-validate
-        run: composer validate
-
-      - name: Cache Composer packages
-        id: composer-cache
-        uses: actions/cache@v4
+      - name: Setup PHP 🐫
+        uses: shivammathur/setup-php@v2
         with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
+          php-version: 8.3
 
-      - name: Install dependencies
-        if: steps.composer-cache.outputs.cache-hit != 'true'
-        id: install-dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest
-
-      - name: PHPCS checker
-        id: php-codesniffer
-        run: vendor/squizlabs/php_codesniffer/bin/phpcs --warning-severity=6 --standard=PSR2 --ignore=vendor --extensions=php --report=summary ./
+      - name: Linter 🧹
+        id: linter
+        run: make lint

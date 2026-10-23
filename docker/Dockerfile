@@ -32,12 +32,14 @@ RUN apt-get update \
         php8.0-zip \
     && update-alternatives --set php /usr/bin/php8.0
 
-# Install composer
+# Install composer. Verify the installer against Composer's live signature
+# rather than a hardcoded hash (the installer is rotated, so a pinned hash
+# goes stale and breaks the build).
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
-    && php -r "if (hash_file('sha384', 'composer-setup.php') === '55ce33d7678c5a611085589f1f3ddf8b3c52d662cd01d4ba75c0ee0459970c2200a51f492d557530c71c15d8dba01eae') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" \
-    && php composer-setup.php \
-    && php -r "unlink('composer-setup.php');" \
-    && mv composer.phar /usr/local/bin/composer
+    && HASH=$(curl -s https://composer.github.io/installer.sig) \
+    && echo "$HASH  composer-setup.php" | sha384sum -c - \
+    && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
+    && rm composer-setup.php
 
 # Configure apache
 ENV APACHE_RUN_USER www-data

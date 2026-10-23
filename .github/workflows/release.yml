@@ -1,100 +1,53 @@
-name: 'release'
+name: "release"
 
 on:
   push:
-    tags: ['*']
+    tags: ["*"]
 
 jobs:
-  deploy-bmlt-portal-release:
-    runs-on: ubuntu-latest
+  lint:
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
-        id: code-checkout
+      - name: Check out code 🛒
+        uses: actions/checkout@v7
 
-      - name: Validate composer.json and composer.lock
-        id: composer-validate
-        run: composer validate
-
-      - name: Cache Composer packages
-        id: composer-cache
-        uses: actions/cache@v4
+      - name: Setup PHP 🐫
+        uses: shivammathur/setup-php@v2
         with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
+          php-version: 8.3
 
-      - name: Install dependencies
-        if: steps.composer-cache.outputs.cache-hit != 'true'
-        id: install-dependencies
-        run: composer install --no-dev --prefer-dist --no-progress --no-suggest --classmap-authoritative
+      - name: Linter 🧹
+        id: linter
+        run: make lint
 
-      - name: Prepare zip file
+  package:
+    runs-on: ubuntu-24.04
+    needs: [lint]
+    permissions:
+      contents: write
+    env:
+      BUILD_DIR: build
+    steps:
+      - name: Check out code 🛒
+        uses: actions/checkout@v7
+
+      - name: Setup PHP 🐫
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
+
+      - name: Build package 🔧
+        run: PROD=1 make build
+
+      - name: Generate release notes 📝
         run: |
-          export ARTIFACT_FILE=bmlt-portal
-          export ARTIFACT_FILENAME=bmlt-portal.zip
-          echo "ARTIFACT_FILENAME=${ARTIFACT_FILENAME}" >> $GITHUB_ENV
-          git archive --format=zip --output=${ARTIFACT_FILENAME} --prefix=${ARTIFACT_FILE}/ ${GITHUB_SHA}
-          unzip ${ARTIFACT_FILENAME}
-          rm ${ARTIFACT_FILENAME}
-          echo ${GITHUB_SHA} > ${ARTIFACT_FILE}/build.txt
-          cp -R vendor ${ARTIFACT_FILE}/
-          zip -r -9 ${ARTIFACT_FILENAME} ${ARTIFACT_FILE}
           curl -sLO https://raw.githubusercontent.com/bmlt-enabled/release-notes-tool/master/gh-release-notes.sh
           chmod +x gh-release-notes.sh
           ./gh-release-notes.sh CHANGELOG.md "##"
 
-      - name: Prepare artifact metadata
-        id: prepare_artifact_metadata
-        run: |
-          echo ::set-output name=ARTIFACT_PATH::./${ARTIFACT_FILENAME}
-          echo ::set-output name=ARTIFACT_NAME::${ARTIFACT_FILENAME}
-
-      - name: Release beta
-        if: contains(github.ref, 'beta')
-        id: beta_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Release 🎉
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          prerelease: true
-          draft: false
-
-      - name: Upload Beta Asset
-        if: contains(github.ref, 'beta')
-        id: beta-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.beta_release.outputs.upload_url }}
-          asset_path: ${{ steps.prepare_artifact_metadata.outputs.ARTIFACT_PATH }}
-          asset_name: ${{ steps.prepare_artifact_metadata.outputs.ARTIFACT_NAME }}
-          asset_content_type: application/zip
-
-      - name: Release stable
-        if: "!contains(github.ref, 'beta')"
-        id: stable_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
-          body_path: "changelog.txt"
-          prerelease: false
-          draft: false
-
-      - name: Upload Stable Asset
-        if: "!contains(github.ref, 'beta')"
-        id: stable-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.stable_release.outputs.upload_url }}
-          asset_path: ${{ steps.prepare_artifact_metadata.outputs.ARTIFACT_PATH }}
-          asset_name: ${{ steps.prepare_artifact_metadata.outputs.ARTIFACT_NAME }}
-          asset_content_type: application/zip
+          artifacts: "${{ env.BUILD_DIR }}/bmlt-portal.zip"
+          bodyFile: "changelog.txt"
+          prerelease: ${{ contains(github.ref, 'beta') }}

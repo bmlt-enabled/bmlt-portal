@@ -60,6 +60,131 @@ function bmlt_get_json($url, $assoc = false)
 }
 
 /**
+ * Escape a value for safe output inside HTML text or a double-quoted attribute.
+ */
+function bmlt_e($value): string
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
+/**
+ * Sort an array of associative rows in place by one of their columns.
+ */
+function bmlt_sort_by_subkey(array &$rows, string $subkey, int $sortType = SORT_ASC): void
+{
+    if (empty($rows)) {
+        return;
+    }
+    $keys = array_column($rows, $subkey);
+    array_multisort($keys, $sortType, $rows);
+}
+
+/**
+ * Map a BMLT change_type code to a human-readable label.
+ */
+function bmlt_change_type_label(string $changeType): string
+{
+    return match ($changeType) {
+        'comdef_change_type_change' => 'Change',
+        'comdef_change_type_new' => 'New',
+        'comdef_change_type_delete' => 'DELETE',
+        default => $changeType,
+    };
+}
+
+/**
+ * Map a BMLT weekday_tinyint (1 = Sunday ... 7 = Saturday) to its day name.
+ */
+function bmlt_weekday_name($weekday): string
+{
+    return match ((string) $weekday) {
+        '1' => 'Sunday',
+        '2' => 'Monday',
+        '3' => 'Tuesday',
+        '4' => 'Wednesday',
+        '5' => 'Thursday',
+        '6' => 'Friday',
+        '7' => 'Saturday',
+        default => (string) $weekday,
+    };
+}
+
+/**
+ * Turn a change's "details" string into an HTML list.
+ *
+ * BMLT packs several changes into one sentence-delimited string. We split on
+ * the periods, but first protect the periods that live inside emails and
+ * latitude/longitude values so they aren't mistaken for sentence breaks.
+ */
+function bmlt_format_change_details(string $details): string
+{
+    // Remove root_server_uri noise.
+    $details = str_replace(". root_server_uri was added as \"https:\" ", " ", $details);
+    // Drop the trailing period.
+    $details = preg_replace('/.$/', "", $details);
+    // Remove the format-code separator.
+    $details = str_replace("#@-@#", " ", $details);
+
+    // Protect periods inside emails and coordinates before we split on periods.
+    $protect = fn ($matches) => str_replace(".", "~DOT~", $matches[0]);
+    $protectPatterns = [
+        '/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6})/',
+        '/from \"[0-9]+\./',
+        '/to \"[0-9]+\./',
+        '/from \"-+[0-9]+\./',
+        '/to \"-+[0-9]+\./',
+    ];
+    $details = preg_replace_callback($protectPatterns, $protect, $details);
+
+    // Each remaining period marks a new change; restore the protected periods.
+    $details = str_replace(".", "<LI>", $details);
+    return str_replace("~DOT~", ".", $details);
+}
+
+/**
+ * Render a GetChanges response as HTML. Meetings whose name contains
+ * $skipNeedle (YAP meetings) are omitted.
+ */
+function bmlt_render_changes($changes, string $skipNeedle): string
+{
+    $html = "";
+    foreach ($changes as $row) {
+        if (strpos($row->meeting_name, $skipNeedle) !== false) {
+            continue;
+        }
+        $html .= "<p>";
+        $html .= "<strong>Date:</strong> " . bmlt_e($row->date_string) . " - ";
+        $html .= "<strong>Change Type:</strong> " . bmlt_e(bmlt_change_type_label($row->change_type)) . "<br/>";
+        $html .= "<strong>Meeting (ID) Name:</strong> (" . bmlt_e($row->meeting_id) . ") " . bmlt_e($row->meeting_name) . "<br/>";
+        $html .= "<strong>User Name:</strong> " . bmlt_e($row->user_name) . "<br/>";
+        $html .= "<strong>Service Body:</strong> " . bmlt_e($row->service_body_name) . "</br><OL>";
+        $html .= "<strong>Details:</strong><LI> " . bmlt_format_change_details($row->details) . "</OL>";
+        $html .= "</p> <hr>";
+    }
+    return $html;
+}
+
+/**
+ * Build the "Changes" table rows for the portal home page: one row per service
+ * body, each linking to its 30- and 90-day change reports.
+ */
+function bmlt_change_links_rows(array $serviceBodies): string
+{
+    $html = "";
+    foreach ($serviceBodies as $sb) {
+        $query = "asc=" . urlencode($sb['name']) . "&areanum=" . urlencode((string) $sb['id']);
+        $html .= "<tr><td>" . bmlt_e($sb['name']) . "</td><td>";
+        foreach ([30, 90] as $i => $days) {
+            $html .= ($i ? " | " : "")
+                . "<a href=\"changes.php?" . $query . "&hdays=" . $days
+                . "\" class=\"button special\" target=\"_blank\">" . $days . " Days</a>";
+        }
+        $html .= "</td></tr>";
+    }
+    return $html;
+}
+
+/**
  * Render a friendly "can't reach the server" page and stop.
  *
  * This is what the portal shows instead of a blank 500 when the BMLT server
