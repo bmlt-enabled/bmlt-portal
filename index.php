@@ -10,11 +10,32 @@ $gsb_array = bmlt_get_json($bmlt_server . "/client_interface/json/?switcher=GetS
 if ($gsb_array === null) {
     bmlt_fail($bmlt_server);
 }
+
+bmlt_sort_by_subkey($gsb_array, 'name');
+
+// Decide which service bodies to list. When a parent is configured we show its
+// children (optionally including the parent itself); otherwise we show them all.
+// An empty config value counts as "not configured".
+if (!empty($parent_service_body_id)) {
+    $service_bodies = array_filter(
+        $gsb_array,
+        fn ($sb) => $sb['parent_id'] == $parent_service_body_id
+    );
+    if (!empty($include_parent_service_body_id)) {
+        $key = array_search($parent_service_body_id, array_column($gsb_array, 'id'));
+        if ($key !== false) {
+            $service_bodies[] = $gsb_array[$key];
+        }
+        bmlt_sort_by_subkey($service_bodies, 'name');
+    }
+} else {
+    $service_bodies = $gsb_array;
+}
 ?>
 <!DOCTYPE HTML>
 <html>
 <head>
-    <title><?php echo $service_body_shortname; ?> Meeting List Docs</title>
+    <title><?php echo bmlt_e($service_body_shortname); ?> Meeting List Docs</title>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="assets/css/main.css" />
@@ -34,12 +55,12 @@ if ($gsb_array === null) {
         </div>
         <div class="content">
             <div class="inner">
-                <h1><?php echo $service_body_shortname; ?></h1>
+                <h1><?php echo bmlt_e($service_body_shortname); ?></h1>
                 <p>Meeting List resources for<br />
-                    the <?php echo $service_body_name; ?> of Narcotics Anonymous
+                    the <?php echo bmlt_e($service_body_name); ?> of Narcotics Anonymous
                     <span class="rwd-break">
                                     <i class="fa fa-hand-o-right" aria-hidden="true"></i>
-                                    <a href="<?php echo $service_body_website; ?>" target="_blank"><?php echo $service_body_website; ?></a>
+                                    <a href="<?php echo bmlt_e($service_body_website); ?>" target="_blank"><?php echo bmlt_e($service_body_website); ?></a>
                                 </span>
                 </p>
             </div>
@@ -51,14 +72,14 @@ if ($gsb_array === null) {
                 <?php
                 if (isset($GLOBALS['bmlt_instructional_video'])) {
                     ?>
-                    <li><a href="<?php echo $bmlt_instructional_video; ?>" target="_new">INSTRUCTIONAL VIDEO</a></li>
+                    <li><a href="<?php echo bmlt_e($bmlt_instructional_video); ?>" target="_new">INSTRUCTIONAL VIDEO</a></li>
                     <?php
                 }
                 if (isset($GLOBALS['bmlt_instructional_manual'])) {
                     ?>
-                    <li><a href="<?php echo $bmlt_instructional_manual; ?>" target="_new">MANUAL</a></li>
+                    <li><a href="<?php echo bmlt_e($bmlt_instructional_manual); ?>" target="_new">MANUAL</a></li>
                 <?php } ?>
-                <li><a href="<?php echo $bmlt_server; ?>" target="_blank">BMLT</a></li>
+                <li><a href="<?php echo bmlt_e($bmlt_server); ?>" target="_blank">BMLT</a></li>
             </ul>
         </nav>
     </header>
@@ -68,7 +89,7 @@ if ($gsb_array === null) {
         <!-- Intro -->
         <article id="changes">
             <h2 class="major">Changes</h2>
-            <h3 class="major"><?php echo $service_body_shortname; ?></h3>
+            <h3 class="major"><?php echo bmlt_e($service_body_shortname); ?></h3>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -78,60 +99,7 @@ if ($gsb_array === null) {
                     </tr>
                     </thead>
                     <tbody>
-                    <?php
-                    function sortBySubkey(&$array, $subkey, $sortType = SORT_ASC)
-                    {
-                        if (empty($array)) {
-                            return;
-                        }
-                        foreach ($array as $subarray) {
-                            $keys[] = $subarray[$subkey];
-                        }
-                        array_multisort($keys, $sortType, $array);
-                    }
-                    sortBySubkey($gsb_array, 'name');
-                    $changes = "";
-                    $changes_psb = "";
-                    if (isset($parent_service_body_id)) {
-                        $filter_parent_service_body = array_filter($gsb_array, function ($var) use ($parent_service_body_id) {
-                            return ($var['parent_id'] == $parent_service_body_id);
-                        });
-                        if (isset($include_parent_service_body_id)) {
-                            $key = array_search($parent_service_body_id, array_column($gsb_array, 'id'));
-                            $tmp_parent_sb[$key] = $gsb_array[$key];
-                            $filter_parent_service_body = array_merge($filter_parent_service_body, $tmp_parent_sb);
-                            sortBySubkey($filter_parent_service_body, 'name');
-                        }
-
-                        // loop begins
-                        foreach ($filter_parent_service_body as $row_changes_psb) {
-                            $changes_psb .= "<tr>";
-                            $changes_psb .= "<td>" .$row_changes_psb['name']. "</td>";
-                            $changes_psb .= "<td>";
-                            $changes_psb .= "<a href=\"changes.php?asc=" .$row_changes_psb['name']. "&areanum=" .$row_changes_psb['id']. "&hdays=30\" class=\"button special\" target=\"_blank\">30 Days</a>";
-                            $changes_psb .= " | ";
-                            $changes_psb .= "<a href=\"changes.php?asc=" .$row_changes_psb['name']. "&areanum=" .$row_changes_psb['id']. "&hdays=90\" class=\"button special\" target=\"_blank\">90 Days</a>";
-                            $changes_psb .= "</td>";
-                            $changes_psb .= "</tr>";
-                        }
-                        // loop ends
-                        echo $changes_psb;
-                    } else {
-                        // loop begins
-                        foreach ($gsb_array as $row_changes) {
-                            $changes .= "<tr>";
-                            $changes .= "<td>" .$row_changes['name']. "</td>";
-                            $changes .= "<td>";
-                            $changes .= "<a href=\"changes.php?asc=" .$row_changes['name']. "&areanum=" .$row_changes['id']. "&hdays=30\" class=\"button special\" target=\"_blank\">30 Days</a>";
-                            $changes .= " | ";
-                            $changes .= "<a href=\"changes.php?asc=" .$row_changes['name']. "&areanum=" .$row_changes['id']. "&hdays=90\" class=\"button special\" target=\"_blank\">90 Days</a>";
-                            $changes .= "</td>";
-                            $changes .= "</tr>";
-                        }
-                        // loop ends
-                    }
-                    echo $changes;
-                    ?>
+                    <?php echo bmlt_change_links_rows($service_bodies); ?>
                     </tbody>
                 </table>
             </div>
@@ -143,7 +111,7 @@ if ($gsb_array === null) {
         <article id="proofs">
             <h2 class="major">Proof Reports</h2>
 
-            <h3 class="major"><?php echo $service_body_shortname; ?></h3>
+            <h3 class="major"><?php echo bmlt_e($service_body_shortname); ?></h3>
             <div class="table-wrapper">
                 <table>
                     <thead>
@@ -154,28 +122,14 @@ if ($gsb_array === null) {
                     </thead>
                     <tbody>
                     <?php
-                    if (isset($parent_service_body_id)) {
-                        $prf_array = $filter_parent_service_body;
-                    } else {
-                        $prf_array = $gsb_array;
+                    foreach ($service_bodies as $row_proofs) {
+                        $recurse = in_array($row_proofs['type'], ['RS', 'ZF'], true) ? "&recurse=true" : "";
+                        $query = "asc=" . urlencode($row_proofs['name']) . "&areanum=" . urlencode((string) $row_proofs['id']);
+                        echo "<tr><td>" . bmlt_e($row_proofs['name']) . "</td><td>"
+                            . "<a href=\"proofs.php?" . $query . $recurse
+                            . "\" class=\"button special\" target=\"_blank\">Proof Report</a>"
+                            . "</td></tr>";
                     }
-
-                    $proofs = "";
-                    $recurse = "";
-                    // loop begins
-                    foreach ($prf_array as $row_proofs) {
-                        if ($row_proofs['type'] == 'RS' || $row_proofs['type'] == 'ZF') {
-                            $recurse = "&recurse=true";
-                        }
-                        $proofs .= "<tr>";
-                        $proofs .= "<td>" .$row_proofs['name']. "</td>";
-                        $proofs .= "<td>";
-                        $proofs .= "<a href=\"proofs.php?asc=" .$row_proofs['name']. "&areanum=" .$row_proofs['id']. $recurse . "\" class=\"button special\" target=\"_blank\">Proof Report</a>";
-                        $proofs .= "</td>";
-                        $proofs .= "</tr>";
-                    }
-                    // loop ends
-                    echo $proofs;
                     ?>
                     </tbody>
                 </table>
@@ -185,7 +139,7 @@ if ($gsb_array === null) {
 
     <!-- Footer -->
     <footer id="footer">
-        <p class="copyright">&copy; <?php echo date("Y"); ?> - Meeting List Resources - <?php echo $service_body_shortname; ?></p>
+        <p class="copyright">&copy; <?php echo date("Y"); ?> - Meeting List Resources - <?php echo bmlt_e($service_body_shortname); ?></p>
     </footer>
 
 </div>
